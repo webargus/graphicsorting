@@ -1,4 +1,14 @@
-
+/*
+ * 
+ *              Bar chart class to test sorting algorithms
+ *              -----------------------------------------------------
+ *              
+ *              Author: Edson Kropniczki - (c) jun/2019
+ *              mailto: kropniczki@gmail.com
+ *              License: you're free to mess up with this code at your will, just keep reference to developer
+ *              Disclaimer: no warrant given, use it on your own risk! 
+ * 
+ */
 
 ( function () {
     
@@ -61,34 +71,36 @@
 
             var self = this;
             var element = "";
-
+            
+            // constructor
             var create = function() {
                 self.element = document.createElement('div');
                 self.element.setAttribute("class", "bar");
                 return self.element;
             };
-            // create bar and return it
+            // call constructor and return bar object
             return create();
         };
         
-        // create bar chart
+        // instantiate bar chart
         create();
     
     };
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    var selectionSort = function(list) {
+    var selectionSort = function(list, delay, chart) {
         
         var list = list;                     // save list in local member
-        var delay = 150;                 // delay between sorting steps in millisecs
+        var delay = delay;             // delay between sorting steps in millisecs
         var curr_pos = 0;              // index of current walking position in array to sort
         var smallest, smaller_pos;
-        var thread, chart;
+        var chart =  chart;
+        var thread;
         
         var init = function() {
             thread = new Thread(callback, delay);
-            chart = new barChart("chart", list);
+            chart =  new barChart(chart, list);
         };
         
         var callback = function() {
@@ -114,18 +126,7 @@
             
             curr_pos++;
         };
-        /*
-        for current_pos in range(len(lst) - 1):
-            smallest = lst[current_pos]
-            smaller_pos = current_pos
-            for pos in range(current_pos + 1, len(lst)):
-                if lst[pos] < smallest:
-                    smallest = lst[pos]
-                    smaller_pos = pos
-            if smaller_pos != current_pos:
-                lst[current_pos], lst[smaller_pos] = lst[smaller_pos], lst[current_pos]
 
-         */
         this.start = function() {
             thread.Start();
         };
@@ -135,28 +136,77 @@
         
     };
     
-    var initSelectionSort = function() {
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    var bubbleSort = function (list, delay, chart) {
+        
+        var list = list;                     // save list in local member
+        var delay = delay;             // delay between sorting steps in millisecs
+        var chart = chart;
+        var thread, swapped;
+        
+        //  constructor
+        var init = function() {
+            thread = new Thread(callback, delay);
+            chart = new barChart(chart, list);
+        };
+        
+        var callback = function() {
+            swapped = false;
+            for(var i = 1; i < list.length; i++) {
+                if(list[i-1] > list[i]) {
+                    // swap in memory, also graphically and remember it
+                    [ list[i-1], list[i] ] = [ list[i], list[i-1] ];
+                    chart.swap(i-1, i);
+                    swapped = true;
+                }
+            }
+            if(!swapped) {
+                thread.Stop();
+                console.log(list);
+            }
+        };
+        
+        this.start = function() {
+            thread.Start();
+        };
+        
+        // call constructor to instantiate object
+        init();
+ 
+    };
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    var initSorting = function() {
+        
+        // read n from user input, create array and fill it with integers from 1 to n 
         var n = document.getElementById("list_sz").value;
         var list = [];
         for(var i = 0; i < n; i++) {
             list.push(i+1);
         }
+        // shuffle array
         for(var i = 0; i < 100; i++) {
             ix0 = parseInt(Math.random()*n);
             ix1 = parseInt(Math.random()*n);
-            [list[ix0], list[ix1]] = [list[ix1], list[ix0]];
+            [list[ix0], list[ix1]] = [list[ix1], list[ix0]];    // trick to swap
         }
-        console.log(list);
-        var selSort = new selectionSort(list);
-        selSort.start();
+        
+        // instantiate selection sort object and make it work
+        var delay = 50;        // in millisecs
+        var selSort = new selectionSort(list, delay, "chart1");
+        var bubble = new bubbleSort(list, delay, "chart2");
+       // selSort.start();
+        bubble.start();
     };
     
    var  init  = function() {
             
-        console.log("page loaded");
+        console.log("page loaded");     // debug
         
         // Add event listener to start btn:
-        document.getElementById("start").addEventListener("click", initSelectionSort);
+        document.getElementById("start").addEventListener("click", initSorting);
         
     };
     
@@ -183,28 +233,38 @@
 
       var Thread = function (callback, interval) {
 
-          //private:
-          var threadID;
-          var threadBusy = false;
-          var callback = callback;
-          var interval = interval;
+          var self = this;
+          self.threadBusy = false;
+          self.callback = callback;
+          self.interval = interval;
 
           //public:
           this.Start = function () {
-              if (threadBusy)
+              if (self.threadBusy)
                   this.Stop();
-              threadBusy = true;
-              threadID = setInterval(callback, interval);
+              self.threadBusy = true;
+              //self.threadID = setInterval(self.callback, self.interval);
+              runThread();
+          };
+          
+          var runThread = function() {
+              if (!self.threadBusy) {
+                  return;
+              }
+              self.callback();
+              setTimeout(runThread, self.interval);
           };
 
           this.Stop = function () {
-              if (threadBusy)
-                  clearInterval(threadID);
-              threadBusy = false;
+              if (self.threadBusy) {
+                  clearInterval(self.threadID);
+                  console.log("clearing interval for thread id="+self.threadID);
+              }
+              self.threadBusy = false;
           };
 
           this.isBusy = function () {
-              return threadBusy;
+              return self.threadBusy;
           };
       };
 
