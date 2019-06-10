@@ -91,7 +91,13 @@
     
     var selectionSort = function(list, delay, chart) {
         
-        var list = list.slice();                     // save list in local member
+        /*
+         *      IMPORTANT! Use .slice() to hard-copy array to sort; spent HOURS trying to figure out why
+         *      sorting was ending before completion when running mutiple sorting threads simultaneously;
+         *      that was precisely because I wasn't hard-copying the array to sort (list); as a consequence,
+         *      all threads stopped once one or another sorting algorithm finished sorting the shared list.
+         */
+        var list = list.slice();           // save COPY of list in local member
         var delay = delay;             // delay between sorting steps in millisecs
         var curr_pos = 0;              // index of current walking position in array to sort
         var smallest, smaller_pos;
@@ -140,7 +146,13 @@
     
     var bubbleSort = function (list, delay, chart) {
         
-        var list = list.slice();                     // save list in local member
+        /*
+         *      IMPORTANT! Use .slice() to hard-copy array to sort; spent HOURS trying to figure out why
+         *      sorting was ending before completion when running mutiple sorting threads simultaneously;
+         *      that was precisely because I wasn't hard-copying the array to sort (list); as a consequence,
+         *      all threads stopped once one or another sorting algorithm finished sorting the shared list.
+         */
+        var list = list.slice();           // save list COPY in local member
         var delay = delay;             // delay between sorting steps in millisecs
         var chart = chart;
         var thread, swapped;
@@ -163,7 +175,6 @@
             }
             if(!swapped) {
                 thread.Stop();
-                console.log(list);
             }
         };
         
@@ -194,7 +205,7 @@
         }
         
         // instantiate selection sort object and make it work
-        var delay = 50;        // in millisecs
+        var delay = 150;        // in millisecs
         var selSort = new selectionSort(list, delay, "chart1");
         var bubble = new bubbleSort(list, delay, "chart2");
         selSort.start();
@@ -233,38 +244,29 @@
 
       var Thread = function (callback, interval) {
 
-          var self = this;
-          self.threadBusy = false;
-          self.callback = callback;
-          self.interval = interval;
+        //private members:
+          var threadBusy = false;
+          var callback = callback;
+          var interval = interval;
+          var threadID;
 
           //public:
           this.Start = function () {
-              if (self.threadBusy)
+              if (threadBusy)
                   this.Stop();
-              self.threadBusy = true;
-              //self.threadID = setInterval(self.callback, self.interval);
-              runThread();
+              threadBusy = true;
+              threadID = setInterval(callback, interval);
           };
           
-          var runThread = function() {
-              if (!self.threadBusy) {
-                  return;
-              }
-              self.callback();
-              setTimeout(runThread, self.interval);
-          };
-
           this.Stop = function () {
-              if (self.threadBusy) {
-                  clearInterval(self.threadID);
-                  console.log("clearing interval for thread id="+self.threadID);
+              if (threadBusy) {
+                  clearInterval(threadID);
               }
-              self.threadBusy = false;
+              threadBusy = false;
           };
 
           this.isBusy = function () {
-              return self.threadBusy;
+              return threadBusy;
           };
       };
 
