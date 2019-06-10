@@ -105,11 +105,11 @@
         var thread;
         
         var init = function() {
-            thread = new Thread(callback, delay);
+            thread = new Thread(sort, delay);
             chart =  new barChart(chart, list);
         };
         
-        var callback = function() {
+        var sort = function() {
 
             if(curr_pos === list.length - 1) {
                 thread.Stop();
@@ -159,11 +159,11 @@
         
         //  constructor
         var init = function() {
-            thread = new Thread(callback, delay);
+            thread = new Thread(sort, delay);
             chart = new barChart(chart, list);
         };
         
-        var callback = function() {
+        var sort = function() {
             swapped = false;
             for(var i = 1; i < list.length; i++) {
                 if(list[i-1] > list[i]) {
@@ -189,6 +189,53 @@
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
+    var insertionSort = function (list, delay, chart) {
+        
+        /*
+         *      IMPORTANT! Use .slice() to hard-copy array to sort; spent HOURS trying to figure out why
+         *      sorting was ending before completion when running mutiple sorting threads simultaneously;
+         *      that was precisely because I wasn't hard-copying the array to sort (list); as a consequence,
+         *      all threads stopped once one or another sorting algorithm finished sorting the shared list.
+         */
+        var list = list.slice();           // save list COPY in local member
+        var delay = delay;             // delay between sorting steps in millisecs
+        var chart = chart;
+        var thread, curr_pos, pos;
+        
+        //  constructor
+        var init = function() {
+            thread = new Thread(sort, delay);
+            chart = new barChart(chart, list);
+            curr_pos = 1;
+        };
+        
+        var sort = function() {
+            // start from current position in array and scan elements before it until we hit the first element
+            for(pos = curr_pos; pos > -1; pos--) {
+                // swap elements if element before this one is greater
+                if(list[pos-1] > list[pos]) {
+                    [ list[pos-1] , list[pos] ] = [ list[pos], list[pos-1] ];
+                    // swap graphically
+                    chart.swap(pos-1, pos);
+                }
+            }
+            // increment current scan position in array and interrupt thread if end of array hit
+            curr_pos++;
+            if(curr_pos === list.length) {
+                thread.Stop();
+            }
+        };
+        
+        this.start = function() {
+            thread.Start();
+        };
+        
+        // call constructor to instantiate object
+        init();
+ 
+    };
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     var initSorting = function() {
         
         // read n from user input, create array and fill it with integers from 1 to n 
@@ -208,8 +255,10 @@
         var delay = 150;        // in millisecs
         var selSort = new selectionSort(list, delay, "chart1");
         var bubble = new bubbleSort(list, delay, "chart2");
+        var insert = new insertionSort(list, delay, "chart3");
         selSort.start();
         bubble.start();
+        insert.start();
     };
     
    var  init  = function() {
