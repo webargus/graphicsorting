@@ -1,0 +1,24 @@
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+.bar {
+    background-color: #3F51B5;
+    width: 100px;
+    height: 8px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    margin-bottom: 1px;
+    color: white;
+    font-size: 8px;
+}
+
+#chart {
+    margin: 1em;
+    padding: .5em;
+    padding-left: 0;
+    border: 1px solid gray;
+    border-radius: .2em;
+    width: 13em;
+}
