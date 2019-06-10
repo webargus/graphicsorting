@@ -91,7 +91,7 @@
     
     var selectionSort = function(list, delay, chart) {
         
-        var list = list;                     // save list in local member
+        var list = list.slice();                     // save list in local member
         var delay = delay;             // delay between sorting steps in millisecs
         var curr_pos = 0;              // index of current walking position in array to sort
         var smallest, smaller_pos;
@@ -140,7 +140,7 @@
     
     var bubbleSort = function (list, delay, chart) {
         
-        var list = list;                     // save list in local member
+        var list = list.slice();                     // save list in local member
         var delay = delay;             // delay between sorting steps in millisecs
         var chart = chart;
         var thread, swapped;
@@ -197,7 +197,7 @@
         var delay = 50;        // in millisecs
         var selSort = new selectionSort(list, delay, "chart1");
         var bubble = new bubbleSort(list, delay, "chart2");
-       // selSort.start();
+        selSort.start();
         bubble.start();
     };
     
