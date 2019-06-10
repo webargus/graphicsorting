@@ -1,11 +1,4 @@
 
-/*
-
-    Author: Edson Kropniczki    -   Jun/2019
-
-
-*/
-
 body {
     font-family: Arial, sans-serif;
 }
@@ -21,14 +14,6 @@ body {
     font-size: 8px;
 }
 
-ul {
-    list-style: none;
-}
-
-ul li {
-    display: inline-block;
-}
-
 .caption {
     width: 15em;
     margin-top: 2em;
@@ -39,7 +24,7 @@ ul li {
     text-align: center;
 }
 
-.chart {
+#chart {
     margin: 1em;
     padding: .5em;
     padding-left: 0;
