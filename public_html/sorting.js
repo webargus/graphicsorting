@@ -99,10 +99,8 @@
          */
         var list = list.slice();           // save COPY of list in local member
         var delay = delay;             // delay between sorting steps in millisecs
-        var curr_pos = 0;              // index of current walking position in array to sort
-        var smallest, smaller_pos;
+        var thread, passnum, max_pos, temp;
         var chart =  chart;
-        var thread;
         
         var init = function() {
             thread = new Thread(sort, delay);
@@ -110,30 +108,33 @@
         };
         
         var sort = function() {
-
-            if(curr_pos === list.length - 1) {
-                thread.Stop();
+            
+            if(passnum > 0) {
+                max_pos = 0;
+                for(var ix = 0; ix <= passnum; ix++) {
+                    if(list[ix] > list[max_pos]) {
+                        max_pos = ix;
+                    }
+                }
+                
+               //   swap last element with element at max_pos, both in list and graphically
+                temp = list[passnum];
+                list[passnum] = list[max_pos];
+                list[max_pos] = temp;
+                chart.swap(passnum, max_pos);
+                
+                // decrease index of last item to visit in list
+                passnum--;
                 return;
             }
-            smallest = list[curr_pos];
-            smaller_pos = curr_pos;
             
-            for(var ix = curr_pos + 1; ix < list.length; ix++) {
-                if(list[ix] < smallest) {
-                    smallest = list[ix];
-                    smaller_pos = ix;
-                }
-            }
+            thread.Stop();
             
-            if (smaller_pos != curr_pos) {
-               [list[curr_pos], list[smaller_pos]] = [list[smaller_pos], list[curr_pos]];
-               chart.swap(curr_pos, smaller_pos);
-            }
-            
-            curr_pos++;
         };
 
         this.start = function() {
+            passnum = list.length - 1;
+            max_pos = 0;
             thread.Start();
         };
         
@@ -155,7 +156,7 @@
         var list = list.slice();           // save list COPY in local member
         var delay = delay;             // delay between sorting steps in millisecs
         var chart = chart;
-        var thread, swapped;
+        var thread, swapped, passnum, temp;
         
         //  constructor
         var init = function() {
@@ -164,21 +165,27 @@
         };
         
         var sort = function() {
-            swapped = false;
-            for(var i = 1; i < list.length; i++) {
-                if(list[i-1] > list[i]) {
-                    // swap in memory, also graphically and remember it
-                    [ list[i-1], list[i] ] = [ list[i], list[i-1] ];
-                    chart.swap(i-1, i);
-                    swapped = true;
+           if( (passnum > -1) && swapped ) {
+                swapped = false;
+                for(var ix = 0; ix < passnum; ix++) {
+                    if( list[ix+1] < list[ix] ) {
+                        // swap in memory, also graphically and remember it
+                        temp = list[ix];
+                        list[ix] = list[ix+1];
+                        list[ix+1] = temp;
+                        chart.swap( ix, ix+1 );
+                        swapped = true;
+                    }
                 }
+                passnum--;
+                return;
             }
-            if(!swapped) {
-                thread.Stop();
-            }
+            thread.Stop();
         };
         
         this.start = function() {
+            swapped = true;
+            passnum = list.length - 1;
             thread.Start();
         };
         
@@ -200,25 +207,27 @@
         var list = list.slice();           // save list COPY in local member
         var delay = delay;             // delay between sorting steps in millisecs
         var chart = chart;
-        var thread, curr_pos, pos;
+        var thread, curr_pos, curr_val, ins_pos;
         
         //  constructor
         var init = function() {
             thread = new Thread(sort, delay);
             chart = new barChart(chart, list);
-            curr_pos = 1;
         };
         
         var sort = function() {
+            
             // start from current position in array and scan elements before it until we hit the first element
-            for(pos = curr_pos; pos > -1; pos--) {
-                // swap elements if element before this one is greater
-                if(list[pos-1] > list[pos]) {
-                    [ list[pos-1] , list[pos] ] = [ list[pos], list[pos-1] ];
-                    // swap graphically
-                    chart.swap(pos-1, pos);
-                }
+            // or we find an element less than current one
+            curr_val = list[curr_pos];
+            ins_pos = curr_pos;
+            while((ins_pos > 0) && (list[ins_pos - 1] > curr_val))  {
+                list[ins_pos]  = list[ins_pos - 1];
+                chart.swap(ins_pos, ins_pos - 1);
+                ins_pos--;
             }
+            list[ins_pos] = curr_val;
+            
             // increment current scan position in array and interrupt thread if end of array hit
             curr_pos++;
             if(curr_pos === list.length) {
@@ -227,6 +236,7 @@
         };
         
         this.start = function() {
+            curr_pos = 1;
             thread.Start();
         };
         
@@ -252,7 +262,7 @@
         }
         
         // instantiate selection sort object and make it work
-        var delay = 150;        // in millisecs
+        var delay = 400;        // in millisecs
         var selSort = new selectionSort(list, delay, "chart1");
         var bubble = new bubbleSort(list, delay, "chart2");
         var insert = new insertionSort(list, delay, "chart3");
